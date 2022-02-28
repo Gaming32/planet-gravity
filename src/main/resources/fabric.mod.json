@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "planetgravity",
+  "version": "${version}",
+  "name": "Planet Gravity",
+  "description": "Extension for the Gravity Changer mod that adds gravity with bodies.",
+  "authors": [
+    "Gaming32"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Gaming32/planet-gravity",
+    "sources": "https://github.com/Gaming32/planet-gravity"
+  },
+  "license": "MIT",
+  "icon": "assets/planetgravity/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.gaming32.planetgravity.PlanetGravityMod"
+    ]
+  },
+  "mixins": [
+    "planetgravity.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.12",
+    "fabric": "*",
+    "minecraft": ">=1.18",
+    "java": ">=17",
+    "gravitychanger": "^0.3.0"
+  }
+}
