@@ -17,12 +17,12 @@ import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
 public class PlayerEntityMixin {
-    private static final double MIN_TRANSITION_DISTANCE = 2.5;
+    private static final double planetgravity$MIN_TRANSITION_DISTANCE = 2.5;
 
-    private ServerWorld lastWorld;
-    private BodyState lastState;
-    private Vec3d lastTransitionPoint;
-    private boolean underControl;
+    private ServerWorld planetgravity$lastWorld;
+    private BodyState planetgravity$lastState;
+    private Vec3d planetgravity$lastTransitionPoint;
+    private boolean planetgravity$underControl;
 
     @Inject(
         method = "move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V",
@@ -34,12 +34,12 @@ public class PlayerEntityMixin {
         final PlayerEntity player = (PlayerEntity)(Object)this;
         if (!(player.world instanceof ServerWorld)) return;
         final Vec3d pos = player.getPos();
-        BodyState state = lastState;
-        if (player.world != lastWorld) {
-            lastWorld = (ServerWorld)player.world;
-            lastState = state = BodyState.getState(lastWorld);
+        BodyState state = planetgravity$lastState;
+        if (player.world != planetgravity$lastWorld) {
+            planetgravity$lastWorld = (ServerWorld)player.world;
+            planetgravity$lastState = state = BodyState.getState(planetgravity$lastWorld);
         }
-        if (lastTransitionPoint != null && pos.isInRange(lastTransitionPoint, MIN_TRANSITION_DISTANCE)) return;
+        if (planetgravity$lastTransitionPoint != null && pos.isInRange(planetgravity$lastTransitionPoint, planetgravity$MIN_TRANSITION_DISTANCE)) return;
         final Direction oldDir = GravityChangerAPI.getGravityDirection(player);
         double closestDistance = 0;
         Vec3d closest = null;
@@ -55,13 +55,13 @@ public class PlayerEntityMixin {
             }
         }
         if (closest == null) {
-            if (underControl) {
+            if (planetgravity$underControl) {
                 GravityChangerAPI.setGravityDirection(player, Direction.DOWN);
-                underControl = false;
+                planetgravity$underControl = false;
             }
             return;
         }
-        underControl = true;
+        planetgravity$underControl = true;
         Direction newDir;
         double maxDist, curDist;
         if (pos.y < closest.y) {
@@ -94,7 +94,7 @@ public class PlayerEntityMixin {
             }
         }
         if (newDir != oldDir) {
-            lastTransitionPoint = pos;
+            planetgravity$lastTransitionPoint = pos;
         }
         GravityChangerAPI.setGravityDirection(player, newDir);
     }
