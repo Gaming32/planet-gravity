@@ -59,7 +59,12 @@ public class PlanetGravityMod implements ModInitializer {
                                     final Vec3d pos = context.getArgument("pos", PosArgument.class).toAbsolutePos(context.getSource());
                                     final double range = context.getArgument("range", Double.class);
                                     final BodyState state = BodyState.getState(context.getSource().getWorld());
-                                    state.getGravityBody(pos).setRange(range);
+                                    final GravityBody body = state.getGravityBody(pos);
+                                    if (pos == null) {
+                                        context.getSource().sendError(Text.of("No body found at " + pos));
+                                        return 0;
+                                    }
+                                    body.setRange(range);
                                     state.setDirty(true);
                                     context.getSource().sendFeedback(
                                         Text.of("Successfully updated the range of " + pos + " to " + range), true
