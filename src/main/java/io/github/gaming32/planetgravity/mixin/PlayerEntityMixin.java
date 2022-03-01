@@ -17,7 +17,7 @@ import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
 public class PlayerEntityMixin {
-    private static final double MIN_TRANSITION_DISTANCE = 0.5;
+    private static final double MIN_TRANSITION_DISTANCE = 2.5;
 
     private ServerWorld lastWorld;
     private BodyState lastState;
@@ -39,7 +39,7 @@ public class PlayerEntityMixin {
             lastWorld = (ServerWorld)player.world;
             lastState = state = BodyState.getState(lastWorld);
         }
-        if (pos.isInRange(lastTransitionPoint, MIN_TRANSITION_DISTANCE)) return;
+        if (lastTransitionPoint != null && pos.isInRange(lastTransitionPoint, MIN_TRANSITION_DISTANCE)) return;
         final Direction oldDir = GravityChangerAPI.getGravityDirection(player);
         double closestDistance = 0;
         Vec3d closest = null;
