@@ -17,8 +17,12 @@ import net.minecraft.util.math.Vec3d;
 
 @Mixin(Entity.class)
 public class PlayerEntityMixin {
+    private static final double MIN_TRANSITION_DISTANCE = 0.5;
+
     private ServerWorld lastWorld;
     private BodyState lastState;
+    private Vec3d lastTransitionPoint;
+    private boolean underControl;
 
     @Inject(
         method = "move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V",
@@ -35,6 +39,8 @@ public class PlayerEntityMixin {
             lastWorld = (ServerWorld)player.world;
             lastState = state = BodyState.getState(lastWorld);
         }
+        if (pos.isInRange(lastTransitionPoint, MIN_TRANSITION_DISTANCE)) return;
+        final Direction oldDir = GravityChangerAPI.getGravityDirection(player);
         double closestDistance = 0;
         Vec3d closest = null;
         for (GravityBody body : state.getAllBodies()) {
@@ -49,40 +55,47 @@ public class PlayerEntityMixin {
             }
         }
         if (closest == null) {
-            GravityChangerAPI.setGravityDirection(player, Direction.DOWN);
+            if (underControl) {
+                GravityChangerAPI.setGravityDirection(player, Direction.DOWN);
+                underControl = false;
+            }
             return;
         }
+        underControl = true;
         Direction newDir;
-        double minDist, curDist;
+        double maxDist, curDist;
         if (pos.y < closest.y) {
             newDir = Direction.UP;
-            minDist = closest.y - pos.y;
+            maxDist = closest.y - pos.y;
         } else {
             newDir = Direction.DOWN;
-            minDist = pos.y - closest.y;
+            maxDist = pos.y - closest.y;
         }
         if (pos.x < closest.x) {
-            if ((curDist = closest.x - pos.x) < minDist) {
-                newDir = Direction.SOUTH;
-                minDist = curDist;
+            if ((curDist = closest.x - pos.x) > maxDist) {
+                newDir = Direction.EAST;
+                maxDist = curDist;
             }
         } else {
-            if ((curDist = pos.x - closest.x) < minDist) {
-                newDir = Direction.NORTH;
-                minDist = curDist;
+            if ((curDist = pos.x - closest.x) > maxDist) {
+                newDir = Direction.WEST;
+                maxDist = curDist;
             }
         }
-        // if (pos.z < closest.z) {
-        //     if ((curDist = closest.z - pos.z) < minDist) {
-        //         newDir = Direction.SOUTH;
-        //         minDist = curDist;
-        //     }
-        // } else {
-        //     if ((curDist = pos.z - closest.z) < minDist) {
-        //         newDir = Direction.NORTH;
-        //         minDist = curDist;
-        //     }
-        // }
+        if (pos.z < closest.z) {
+            if ((curDist = closest.z - pos.z) > maxDist) {
+                newDir = Direction.SOUTH;
+                maxDist = curDist;
+            }
+        } else {
+            if ((curDist = pos.z - closest.z) > maxDist) {
+                newDir = Direction.NORTH;
+                maxDist = curDist;
+            }
+        }
+        if (newDir != oldDir) {
+            lastTransitionPoint = pos;
+        }
         GravityChangerAPI.setGravityDirection(player, newDir);
     }
 }
